@@ -6,9 +6,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import thoughtworks.trains.domain.Graph;
+import thoughtworks.trains.domain.Path;
 
 public class Main {
 	
@@ -21,39 +23,51 @@ public class Main {
 		/*
 		 * The distance of the route A-B-C.
 		 */
-		//System.out.println("Output #1: "+graph.computeDistanceOfpath("A->B->C"));
+		graph.getPath("A-B-C").ifPresent(path -> {
+			System.out.println("Output #1: "+path.getDistance());
+		});
 		
 		/*
 		 * The distance of the route A-D.
 		 */
-		//System.out.println("Output #2: "+computeDistance(graph, "A->D"));
+		graph.getPath("A-D").ifPresent(path -> {
+			System.out.println("Output #2: "+path.getDistance());
+		});
+				
 		
 		/*
 		 * The distance of the route A-D-C.
 		 */
-		//System.out.println("Output #3: "+computeDistance(graph, "A->D->C"));
+		graph.getPath("A-D-C").ifPresent(path -> {
+			System.out.println("Output #3: "+path.getDistance());
+		});		
 		
 		/*
 		 * The distance of the route A-E-B-C-D.
 		 */
-		//System.out.println("Output #4: "+computeDistance(graph, "A->E->B->C->D"));
+		graph.getPath("A-E-B-C-D").ifPresent(path -> {
+			System.out.println("Output #4: "+path.getDistance());
+		});		
 		
 		/*
 		 * The distance of the route A-E-D.
-		 */
-		//System.out.println("Output #5: "+computeDistance(graph, "A->E->D"));
+		 */		
+		if(!graph.getPath("A-E-D").isPresent()) {
+			System.out.println("Output #5: NO SUCH ROUTE");
+		}		
+				
 				
 		/*
 		 * The number of trips starting at C and ending at C with a maximum of 3 stops.  
 		 * In the sample data below, there are two such trips: C-D-C (2 stops). and C-E-B-C (3 stops).
 		 */
-		//System.out.println("Output #6: "+graph.getPathsWithMaximumStops("C", "C", 3).count());
+		System.out.println("Output #6: "+graph.getPathsWithMaximumStops("C", "C", 3).count());
 		
 		/*
 		 * The number of trips starting at A and ending at C with exactly 4 stops.  
 		 * In the sample data below, there are three such trips: A to C (via B,C,D); A to C (via D,C,D); and A to C (via D,E,B).
 		 */
-		//System.out.println("Output #7: "+graph.getPathsWithExactStops("A", "C", 4).count());		
+		System.out.println("Output #7: "+graph.getPathsWithExactStops("A", "C", 4).count());		
 		
 		/*
 		 * The length of the shortest route (in terms of distance to travel) from A to C.
@@ -69,7 +83,7 @@ public class Main {
 		 * The number of different routes from C to C with a distance of less than 30.  
 		 * In the sample data, the trips are: CDC, CEBC, CEBCDC, CDCEBC, CDEBC, CEBCEBC, CEBCEBCEBC. 
 		 */
-		//System.out.println("Output #10: "+graph.getPathsWithMaxDistance("C", "C", 30).count());		
+		System.out.println("Output #10: "+graph.getPathsWithMaxDistance("C", "C", 30).count());		
 		
 		
 	}

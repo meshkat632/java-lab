@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import thoughtworks.trains.domain.Graph;
@@ -28,16 +27,7 @@ public class TestGraph {
 		assertEquals("should produce the same graph", "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7", graph.toString());													   
 
 	}
-	
-	/*
-	 * The distance of the route A-B-C.
-	 */
-	@Test
-	public void test1() {	
-		/*
-		System.out.println("Output #1: "+graph.computeDistanceOfpath("A->B->C"));
-		*/
-	}
+	 
 	
 	@Test
 	public void test7() {
@@ -76,6 +66,59 @@ public class TestGraph {
 		Graph graph = Graph.buildGraphFromEdgeList(Arrays.asList("AB6"));		
 		assertEquals(6, graph.getShortestPath("A", "B"));
 	}
+	
+	@Test
+	public void test0() {
+
+		Graph graph = Graph
+				.buildGraphFromEdgeList(Arrays.asList("AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"));
+		graph.getPath("A-B-C").ifPresent(path ->{
+			assertEquals(9, path.getDistance());
+		});
+		
+		graph.getPath("A-D").ifPresent(path ->{
+			assertEquals(5, path.getDistance());
+		});
+		graph.getPath("A-D-C").ifPresent(path ->{
+			assertEquals(13, path.getDistance());
+		});
+		
+		graph.getPath("A-E-B-C-D").ifPresent(path ->{
+			assertEquals(22, path.getDistance());
+		});
+		
+		if(!graph.getPath("A-E-D").isPresent()) {
+			System.out.println("Output #5: NO SUCH ROUTE");
+		}
+		assertEquals(false, graph.getPath("A-E-D").isPresent());		 
+
+	}
+
+	@Test
+	public void test1() {
+
+		Graph graph = Graph
+				.buildGraphFromEdgeList(Arrays.asList("AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"));
+		assertEquals(2, graph.getPathsWithMaximumStops("C", "C", 3).count());
+
+	}
+
+	@Test
+	public void test2() {
+
+		Graph graph = Graph
+				.buildGraphFromEdgeList(Arrays.asList("AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"));
+		assertEquals(3, graph.getPathsWithExactStops("A", "C", 4).count());
+	}
+
+	@Test
+	public void test3() {
+
+		Graph graph = Graph
+				.buildGraphFromEdgeList(Arrays.asList("AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"));
+		assertEquals(7, graph.getPathsWithMaxDistance("C", "C", 30).count());
+	}
+	
 	
 	
 	public static List<String> loadData(String filePath) throws IOException {

@@ -2,8 +2,12 @@ package thoughtworks.trains.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 
 import thoughtworks.trains.alogs.ShortestPathFinder;
 
@@ -133,11 +137,144 @@ public class Graph {
 			throw new IllegalArgumentException("source and destination vertex no found in graph.");
 
 	}
+ 
+	
+	
+	public Optional<Path> getPath(String pathStr) {
+		if(pathStr == null ) return Optional.empty();
+		Path path = new Path();
+		String[] splits = pathStr.split("-");
+		for (int i = 0; i < splits.length - 1; i++) {
+			final String source = splits[i];
+			final String destination = splits[i + 1];			
+			Optional<Edge> edge = findEdge(source, destination);
+			if (edge.isPresent())
+				path.addedge(edge.get());	
+			else {				
+				return Optional.empty();
+			}				
+		}		
+		return Optional.of(path);
+	}
 
+	public interface PathEndEventListener {		
+		public void onPathEnd(String path);
+	}	
+
+	private void findPathsWithMaximumStops(Vertex source, String pathStr, int maximumStops, PathEndEventListener ls) {
+		Optional<Path> path = getPath(pathStr);		
+		if(path.isPresent() && path.get().getEdges().size() == maximumStops) {
+			return;
+		}
+		
+		if (source.getOutgoingEdges().isEmpty()) {
+			pathStr = pathStr + "-" + source.getName();
+			ls.onPathEnd(pathStr);
+		} else {
+			String newPath;
+			if (pathStr == null || pathStr.isEmpty()) {
+				newPath = source.getName();
+			} else {
+				newPath = pathStr + "-" + source.getName();
+			}
+			source.getOutgoingEdges().stream().sorted((edge1, edge2) -> edge1.getWeight() - edge2.getWeight())
+					.forEach(edge -> {
+						ls.onPathEnd(newPath);
+						findPathsWithMaximumStops(edge.getDestination(), newPath, maximumStops, ls);
+					});
+		}
+	}
+	
+	private void findPathsFromSourceWithMaximumDistance(Vertex source, String pathStr, int maximumDistance,
+			PathEndEventListener ls) {
+		Optional<Path> path = getPath(pathStr);	
+		if(path.isPresent() && path.get().getDistance() >= maximumDistance) {
+			ls.onPathEnd(pathStr);			
+			return;
+		}
+		
+		if (source.getOutgoingEdges().isEmpty()) {
+			pathStr = pathStr + "-" + source.getName();
+			ls.onPathEnd(pathStr);
+		} else {
+			String newPath;
+			if (pathStr == null || pathStr.isEmpty()) {
+				newPath = source.getName();
+			} else {
+				newPath = pathStr + "-" + source.getName();
+			}
+			source.getOutgoingEdges().stream().sorted((o1, o2) -> o1.getWeight() - o2.getWeight()).forEach(edge -> {
+				ls.onPathEnd(newPath);
+				findPathsFromSourceWithMaximumDistance(edge.getDestination(), newPath, maximumDistance, ls);
+			});
+		}
+	}
 	
 
+	public Stream<Path> getPathsWithMaximumStops(String from, String to, int maximumStops) {
+		Vertex vertexFrom = getVertexWithName(from);
+		Vertex vertexTo = getVertexWithName(to);
+		if (vertexFrom != null && vertexTo != null) {
+			Map<String, Path> paths = new HashMap<>();
+			findPathsWithMaximumStops(vertexFrom, null, maximumStops, new PathEndEventListener() {
 
+				@Override
+				public void onPathEnd(String pathStr) {
+					if (pathStr.endsWith(to)) {
+						getPath(pathStr).ifPresent(path -> {
+							if (path.getDistance() != 0)
+								paths.put(pathStr, path);	
+						});					
+					}
 
+				}
+			});
+			return paths.values().stream();
+		} else
+			throw new IllegalArgumentException("source and destination vertex no found in graph.");
+	}
 	
+	public Stream<Path> getPathsWithExactStops(String from, String to, int stops) {
+		Vertex vertexFrom = getVertexWithName(from);
+		Vertex vertexTo = getVertexWithName(to);
+		if (vertexFrom != null && vertexTo != null) {
+			Map<String, Path> paths = new HashMap<>();
+			findPathsWithMaximumStops(vertexFrom, null, stops, new PathEndEventListener() {
+				@Override
+				public void onPathEnd(String pathStr) {
+					if (pathStr.endsWith(to)) {						
+						getPath(pathStr).ifPresent(path -> {
+							if (path.getDistance() != 0 && path.getEdges().size() == stops)
+								paths.put(pathStr, path);	
+						});					
+						
+					}
+				}
+			});
+			return paths.values().stream();
+		} else
+			throw new IllegalArgumentException("source and destination vertex no found in graph.");
+	}
+	
+	public Stream<Path> getPathsWithMaxDistance(String from, String to, int maxDistance) {
+		Vertex vertexFrom = getVertexWithName(from);
+		Vertex vertexTo = getVertexWithName(to);
+		if (vertexFrom != null && vertexTo != null) {
+			Map<String, Path> paths = new HashMap<>();
+			findPathsFromSourceWithMaximumDistance(vertexFrom, null, maxDistance, new PathEndEventListener() {
+				@Override
+				public void onPathEnd(String pathStr) {
+					if (pathStr.endsWith(to)) {
+						getPath(pathStr).ifPresent(path -> {
+							if (path.getDistance() != 0 && path.getDistance() < maxDistance)
+								paths.put(pathStr, path);
+						});					
+					}
+				}
+			});
+			return paths.values().stream();
+		} else
+			throw new IllegalArgumentException("source and destination vertex no found in graph.");
 
+	}
 }
