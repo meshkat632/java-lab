@@ -10,6 +10,8 @@ public class Edge  {
         this.source = source;
         this.destination = destination;
         this.weight = weight;        
+        this.source.addOutGoingEdge(this);
+        this.destination.addIncomingEdge(this);
     }
     
     public Vertex getDestination() {
