@@ -1,0 +1,11 @@
+/.gradle/
+/bin/
+/build/
+/vagrant-scripts/build/
+/data/
+/.vagrant/
+/.idea/
+/.settings/
+.classpath
+.project
+gradle.properties
