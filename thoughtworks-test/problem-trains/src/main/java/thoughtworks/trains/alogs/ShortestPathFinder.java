@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import thoughtworks.trains.domain.Edge;
 import thoughtworks.trains.domain.Graph;
+import thoughtworks.trains.domain.NoSuchRouteException;
 import thoughtworks.trains.domain.Path;
 import thoughtworks.trains.domain.Vertex;
 
@@ -86,7 +87,7 @@ public class ShortestPathFinder {
 		Vertex previousVertex = distanceFromStart.get(to).getPreviousVertex();
 		if (previousVertex == null) {
 			if(path.getEdges().isEmpty()) {
-				throw new IllegalStateException("NO SUCH ROUTE "+to);				
+				throw new NoSuchRouteException("NO SUCH ROUTE "+to);				
 			}else 
 				Collections.reverse(path.getEdges());
 		} else {

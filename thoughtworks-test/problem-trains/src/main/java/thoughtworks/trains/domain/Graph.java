@@ -90,11 +90,11 @@ public class Graph {
                .orElse("");		
 	}
 	
-	public static Graph buildGraphFromString(String graphAsStr) throws IllegalArgumentException {		
+	public static Graph buildGraphFromString(String graphAsStr) {		
 		Graph graph = new Graph();		
 		Arrays.stream(graphAsStr.split(", ")).forEach( edge-> {						
 			if(!edge.matches("[A-Z]{2}[0-9]{1,9}")) {
-				throw new IllegalArgumentException("invalid format for edge input. e.g AB5 or CD2000. Please confirm to the regex [A-Z]{2}[0-9]{1,9}");
+				throw new IllegalArgumentException("invalid format for edge input. e.g AB5, CD2000. Please confirm to the regex [A-Z]{2}[0-9]{1,9}");
 			}			
 			String source = edge.charAt(0)+"";
 			String destination = edge.charAt(1)+"";			
@@ -104,7 +104,7 @@ public class Graph {
 		return graph;	        
 	}
 
-	public static Graph buildGraphFromEdgeList(List<String> edgesAsStr) throws IllegalArgumentException {
+	public static Graph buildGraphFromEdgeList(List<String> edgesAsStr) {
 		
 		Graph graph = new Graph();		
 		edgesAsStr.forEach( edge-> {						
@@ -157,6 +157,7 @@ public class Graph {
 		return Optional.of(path);
 	}
 
+	@FunctionalInterface
 	public interface PathEndEventListener {		
 		public void onPathEnd(String path);
 	}	
@@ -216,19 +217,14 @@ public class Graph {
 		Vertex vertexTo = getVertexWithName(to);
 		if (vertexFrom != null && vertexTo != null) {
 			Map<String, Path> paths = new HashMap<>();
-			findPathsWithMaximumStops(vertexFrom, null, maximumStops, new PathEndEventListener() {
-
-				@Override
-				public void onPathEnd(String pathStr) {
+			findPathsWithMaximumStops(vertexFrom, null, maximumStops, pathStr -> {
 					if (pathStr.endsWith(to)) {
 						getPath(pathStr).ifPresent(path -> {
 							if (path.getDistance() != 0)
 								paths.put(pathStr, path);	
 						});					
 					}
-
-				}
-			});
+				});
 			return paths.values().stream();
 		} else
 			throw new IllegalArgumentException("source and destination vertex no found in graph.");
@@ -239,9 +235,7 @@ public class Graph {
 		Vertex vertexTo = getVertexWithName(to);
 		if (vertexFrom != null && vertexTo != null) {
 			Map<String, Path> paths = new HashMap<>();
-			findPathsWithMaximumStops(vertexFrom, null, stops, new PathEndEventListener() {
-				@Override
-				public void onPathEnd(String pathStr) {
+			findPathsWithMaximumStops(vertexFrom, null, stops, pathStr -> {
 					if (pathStr.endsWith(to)) {						
 						getPath(pathStr).ifPresent(path -> {
 							if (path.getDistance() != 0 && path.getEdges().size() == stops)
@@ -249,8 +243,7 @@ public class Graph {
 						});					
 						
 					}
-				}
-			});
+				});
 			return paths.values().stream();
 		} else
 			throw new IllegalArgumentException("source and destination vertex no found in graph.");
@@ -261,17 +254,14 @@ public class Graph {
 		Vertex vertexTo = getVertexWithName(to);
 		if (vertexFrom != null && vertexTo != null) {
 			Map<String, Path> paths = new HashMap<>();
-			findPathsFromSourceWithMaximumDistance(vertexFrom, null, maxDistance, new PathEndEventListener() {
-				@Override
-				public void onPathEnd(String pathStr) {
+			findPathsFromSourceWithMaximumDistance(vertexFrom, null, maxDistance, pathStr -> {
 					if (pathStr.endsWith(to)) {
 						getPath(pathStr).ifPresent(path -> {
 							if (path.getDistance() != 0 && path.getDistance() < maxDistance)
 								paths.put(pathStr, path);
 						});					
 					}
-				}
-			});
+				});
 			return paths.values().stream();
 		} else
 			throw new IllegalArgumentException("source and destination vertex no found in graph.");
